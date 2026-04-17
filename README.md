@@ -41,7 +41,7 @@ README.md            Project documentation
 
 ## CI/CD Architecture
 
-![CI/CD Pipeline](docs/cicd-architecture.png)
+![CI/CD Pipeline](cicd-architecture.png.png)
 
 The project uses GitHub Actions to automate deployment:
 

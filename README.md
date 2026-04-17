@@ -21,111 +21,159 @@ Live Application
 The application is deployed and accessible at:
 
 https://harshithayentrapragada.github.io/cdnm/
-Key Capabilities
-Role-Based Navigation
+```
 
-The portal differentiates between the following user roles:
+---
 
-Researcher
-Developer / Engineer
+## Key Capabilities
 
-Each role is presented with relevant resources and actions to improve usability and reduce complexity.
+### 1. Role-Based Navigation
 
-Structured Resource Access
+The portal supports two primary user roles:
 
-The portal provides organized access to key resources, including:
+* **Researcher**
+* **Developer / Engineer**
 
-Data Dictionary
-Query Examples
-Analysis Notebooks
-Platform usage guidance
+Each role is presented with relevant resources to reduce unnecessary complexity.
 
-Redundant or duplicate entries have been removed to maintain clarity.
+---
 
-User Experience Improvements
+### 2. Structured Resource Access
 
-The following improvements were implemented:
+Key platform resources are organized and simplified:
 
-Simplified navigation structure
-Clean and consistent layout
-Logical grouping of related actions
-Improved readability and alignment
-Reduction of duplicate UI elements
-Feedback Mechanism
+* Data Dictionary
+* Query Examples
+* Analysis Notebooks
+* Platform usage guidance
 
-A lightweight feedback system is included to capture:
+Duplicate or redundant entries were removed to improve clarity.
 
-General usability feedback
-Suggestions for improvement
+---
 
-Technical issue reporting is handled separately through a ticketing system.
+### 3. User Experience Improvements
 
-Architecture
+**Enhancements implemented:**
 
-The application follows a simple static architecture:
+* Simplified navigation structure
+* Clean and consistent layout
+* Proper alignment and spacing
+* Logical grouping of actions
+* Removal of duplicate UI elements
 
-Frontend: HTML, CSS, JavaScript
-Hosting: GitHub Pages
-CI/CD: GitHub Actions
-Code Organization: Modular and maintainable static components
-CI/CD Implementation
+---
 
-A branch-based CI/CD workflow has been implemented to ensure controlled deployment.
+### 4. Feedback Mechanism
 
-Development Environment (dev branch)
-Used for implementing and testing changes
-Triggers CI pipeline for validation
-Does not deploy to production
-Production Environment (main branch)
-Contains stable and reviewed changes
-Triggers deployment pipeline
-Automatically updates the live site
-Workflow
+A lightweight feedback system allows users to:
+
+* Submit usability feedback
+* Suggest improvements
+
+This is intentionally separated from technical issue tracking.
+
+---
+
+## Architecture
+
+**Technology stack:**
+
+* **Frontend:** HTML, CSS, JavaScript
+* **Hosting:** GitHub Pages
+* **CI/CD:** GitHub Actions
+
+---
+
+## CI/CD Implementation
+
+A branch-based workflow ensures safe and controlled deployment.
+
+### Development Environment (dev)
+
+* Used for testing changes
+* Runs validation pipeline
+* Does not deploy
+
+### Production Environment (main)
+
+* Contains stable code
+* Triggers deployment
+* Updates live application
+
+---
+
+### Workflow
+
+```
 dev → validate → merge → main → deploy → live
-Development Process
-Step 1: Develop and test changes
+```
+
+---
+
+## Development Process
+
+### Develop and Test (dev)
+
+```
 git checkout dev
 git add .
 git commit -m "Update feature"
 git push origin dev
-Step 2: Promote changes to production
+```
+
+### Deploy to Production (main)
+
+```
 git checkout main
 git merge dev
 git push origin main
-Design Considerations
+```
 
-The following principles guided the implementation:
+---
 
-Clear separation between development and production environments
-Minimal and focused UI to reduce cognitive load
-Elimination of duplicate resources
-Consistent alignment and typography
-Maintainability for future enhancements
-Challenges and Approach
-Navigation consistency
+## Design Considerations
+
+* Separation of development and production environments
+* Minimal and focused UI
+* Clear role-based navigation
+* Consistent alignment and typography
+* Maintainable structure
+
+---
+
+## Challenges and Approach
+
+**Navigation Consistency**
 Ensured stable behavior across sections and reloads
-Duplicate resource handling
-Identified and removed redundant entries to improve clarity
-State management on reload
+
+**Duplicate Resources**
+Removed redundant entries to improve clarity
+
+**State Management**
 Reset UI state to avoid unintended persistence
-Deployment reliability
-Implemented CI/CD with controlled production deployment
-Future Enhancements
 
-Potential improvements include:
+**Deployment Reliability**
+Implemented CI/CD for controlled deployment
 
-Preview environments for development changes
-Enhanced validation steps in CI pipeline
-Improved search and filtering capabilities
-Integration of analytics for user interaction tracking
-Summary
+---
+
+## Future Enhancements
+
+* Preview environments for development
+* Improved validation in CI pipeline
+* Advanced search and filtering
+* Analytics for user interaction
+
+---
+
+## Summary
 
 This project demonstrates:
 
-Structured UI design for documentation systems
-Role-based user experience design
-Implementation of a branch-based CI/CD pipeline
-Controlled deployment using GitHub Pages
-A scalable foundation for future development
+* Structured UI design
+* Role-based user experience
+* CI/CD implementation
+* Controlled deployment workflow
+* Scalable front-end architecture
 
-
+---

@@ -1,0 +1,10 @@
+{
+  "name": "cdnm-gen3-docs-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plain React and CSS documentation portal",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}

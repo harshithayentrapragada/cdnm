@@ -23,7 +23,7 @@ https://harshithayentrapragada.github.io/cdnm/
 ## CI/CD Architecture
 
 <p align="center">
-  <img src="./cicd-architecture.png" alt="CI/CD Pipeline" width="800"/>
+  <img src="cicd-architecture.png.png" alt="CI/CD Pipeline" width="800"/>
 </p>
 
 ---

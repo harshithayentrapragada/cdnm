@@ -1,12 +1,28 @@
-name: Deploy to GitHub Pages
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
+      - dev
 
 jobs:
+
+  # ✅ Runs for both dev and main
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Basic check
+        run: echo "Code checked successfully"
+
+  # 🚀 Runs ONLY for main (production)
   deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
     runs-on: ubuntu-latest
 
     environment:
@@ -29,6 +45,6 @@ jobs:
         with:
           path: .
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

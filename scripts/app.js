@@ -7,18 +7,59 @@
     return document.getElementById(id);
   }
 
+  var activeRole = null;
+
+  function isRoleSelectionActive() {
+    return !activeRole || document.body.classList.contains("role-selection-active");
+  }
+
+  function openRoleSelector() {
+    var modal = byId("roleModal");
+
+    document.body.classList.add("role-selection-active");
+
+    if (modal) {
+      modal.classList.remove("hidden");
+      modal.setAttribute("aria-hidden", "false");
+    }
+  }
+
   function setRole(role, hideModal) {
-    document.body.setAttribute("data-role", role);
+    var normalizedRole =
+      role === "user" ? "researcher" : role === "analyst" ? "developer" : role;
+
+    if (normalizedRole !== "researcher" && normalizedRole !== "developer") {
+      return;
+    }
+
+    activeRole = normalizedRole;
+    // Preserve existing role-based CSS without persisting the selected entry role.
+    document.body.setAttribute("data-role", normalizedRole === "researcher" ? "user" : "analyst");
+    document.body.classList.remove("role-selection-active");
 
     var modal = byId("roleModal");
     var roleSwitch = byId("roleSwitch");
 
     if (hideModal && modal) {
       modal.classList.add("hidden");
+      modal.setAttribute("aria-hidden", "true");
     }
 
     if (roleSwitch) {
-      roleSwitch.textContent = role === "user" ? "Researcher" : "Developer";
+      roleSwitch.textContent = normalizedRole === "researcher" ? "Researcher" : "Developer / Engineer";
+      roleSwitch.setAttribute(
+        "aria-label",
+        "Current role: " + (normalizedRole === "researcher" ? "Researcher" : "Developer / Engineer") + ". Switch role"
+      );
+    }
+
+    var currentSection = document.querySelector(".section.active-section");
+    if (
+      currentSection &&
+      window.showSection &&
+      window.getComputedStyle(currentSection).display === "none"
+    ) {
+      window.showSection("intro", true);
     }
   }
 
@@ -70,25 +111,67 @@
     var roleModal = byId("roleModal");
     var roleSwitch = byId("roleSwitch");
 
-    // Clear stale role state so reloads always reopen the default selector.
+    // Always reset the entry role on page load; do not restore old persisted roles.
+    activeRole = null;
     document.body.removeAttribute("data-role");
     localStorage.removeItem("userRole");
     sessionStorage.removeItem("userRole");
 
     if (roleModal) {
-      roleModal.classList.remove("hidden");
+      roleModal.addEventListener("click", function (event) {
+        if (roleModal.classList.contains("hidden")) {
+          return;
+        }
+
+        var choice = event.target.closest("[data-role-choice]");
+
+        if (!choice) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        setRole(choice.getAttribute("data-role-choice"), true);
+      });
     }
 
-    if (roleSwitch && roleModal) {
+    if (roleSwitch) {
       roleSwitch.addEventListener("click", function () {
-        roleModal.classList.remove("hidden");
+        openRoleSelector();
       });
     }
 
     initTheme();
     initNavigation();
     initFeedbackModal();
+    initTicketForm();
     initSearch();
+    initFooter();
+
+    if (roleModal) {
+      roleModal.setAttribute("aria-hidden", "false");
+      openRoleSelector();
+    }
+  }
+
+  function initFooter() {
+    var updated = byId("lastUpdated");
+
+    if (!updated) {
+      return;
+    }
+
+    // Use the browser-reported page timestamp so the footer does not rely on stale stored dates.
+    var modified = new Date(document.lastModified);
+    var formatted = isNaN(modified.getTime())
+      ? "Unavailable"
+      : modified.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        });
+
+    updated.textContent = "Last updated: " + formatted;
   }
 
   function initFeedbackModal() {
@@ -134,6 +217,107 @@
       alert("Feedback submitted. Thank you!");
       form.reset();
       closeFeedbackModal();
+    });
+  }
+
+  function initTicketForm() {
+    var form = byId("ticketForm");
+    var message = byId("ticketMessage");
+    var submit = byId("ticketSubmit");
+
+    if (!form || !message || !submit) {
+      return;
+    }
+
+    // Keep tokens out of browser bundles in production; use a backend proxy or env-backed server endpoint.
+    var GITHUB_TOKEN = "";
+    var REPO_OWNER = "";
+    var REPO_NAME = "";
+
+    function setTicketMessage(text, status) {
+      message.textContent = text;
+      message.className = "ticket-message ticket-message--" + status;
+    }
+
+    function getTicketPayload() {
+      var category = byId("ticketCategory").value;
+      var subject = byId("ticketSubject").value.trim();
+      var description = byId("ticketDescription").value.trim();
+      var priority = byId("ticketPriority").value;
+      var labels = ["support-ticket"];
+
+      if (category) {
+        labels.push(category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""));
+      }
+
+      if (priority.indexOf("High") === 0) {
+        labels.push("priority-high");
+      } else if (priority.indexOf("Low") === 0) {
+        labels.push("priority-low");
+      }
+
+      return {
+        title: subject,
+        body:
+          "## Description\n" +
+          description +
+          "\n\n## Category\n" +
+          (category || "Unspecified") +
+          "\n\n## Priority\n" +
+          priority,
+        labels: labels
+      };
+    }
+
+    async function createGitHubIssue(payload) {
+      if (!REPO_OWNER || !REPO_NAME) {
+        throw new Error("GitHub repository is not configured.");
+      }
+
+      var headers = {
+        Accept: "application/vnd.github+json",
+        "Content-Type": "application/json"
+      };
+
+      if (GITHUB_TOKEN) {
+        headers.Authorization = "Bearer " + GITHUB_TOKEN;
+      }
+
+      var response = await fetch(
+        "https://api.github.com/repos/" + REPO_OWNER + "/" + REPO_NAME + "/issues",
+        {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("GitHub issue creation failed with status " + response.status + ".");
+      }
+
+      return response.json();
+    }
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      if (isRoleSelectionActive()) {
+        return;
+      }
+
+      submit.disabled = true;
+      setTicketMessage("Submitting ticket...", "pending");
+
+      try {
+        var issue = await createGitHubIssue(getTicketPayload());
+        setTicketMessage("Ticket created successfully: #" + issue.number, "success");
+        form.reset();
+      } catch (error) {
+        setTicketMessage(error.message || "Unable to submit ticket. Please try again.", "error");
+      } finally {
+        submit.disabled = false;
+      }
     });
   }
 
@@ -285,7 +469,11 @@
       return navigation && navigation.type === "reload";
     }
 
-    function showSection(targetId, replaceHistory) {
+    function showSection(targetId, replaceHistory, force) {
+      if (!force && isRoleSelectionActive()) {
+        return;
+      }
+
       resetSectionDisplay();
       document.querySelectorAll(".back-to-parent").forEach(function (button) {
         button.remove();
@@ -377,6 +565,9 @@
 
     document.querySelectorAll(".nav__group-label").forEach(function (label) {
       label.addEventListener("click", function () {
+        if (isRoleSelectionActive()) {
+          return;
+        }
         label.parentElement.classList.toggle("collapsed");
       });
     });
@@ -388,6 +579,9 @@
       }
       link.addEventListener("click", function (event) {
         event.preventDefault();
+        if (isRoleSelectionActive()) {
+          return;
+        }
         if (link.classList.contains("has-children")) {
           link.classList.toggle("collapsed");
           var el = link.nextElementSibling;
@@ -408,6 +602,9 @@
     document.querySelectorAll(".nav__sublink").forEach(function (link) {
       link.addEventListener("click", function (event) {
         event.preventDefault();
+        if (isRoleSelectionActive()) {
+          return;
+        }
         var href = link.getAttribute("href");
 
         if (href && href !== "#") {
@@ -421,6 +618,9 @@
         var href = link.getAttribute("href");
         if (href && href !== "#") {
           event.preventDefault();
+          if (isRoleSelectionActive()) {
+            return;
+          }
           showSection(href.replace("#", ""));
         }
       });
@@ -428,6 +628,9 @@
 
     if (sidebarToggle && sidebar && mainEl) {
       sidebarToggle.addEventListener("click", function () {
+        if (isRoleSelectionActive()) {
+          return;
+        }
         sidebar.classList.toggle("collapsed");
         mainEl.classList.toggle("sidebar-hidden");
         var footer = byId("portalFooter");
@@ -444,6 +647,9 @@
     var announcementsToggle = byId("announcementsToggle");
     if (announcementsEl && announcementsToggle) {
       announcementsToggle.addEventListener("click", function () {
+        if (isRoleSelectionActive()) {
+          return;
+        }
         announcementsEl.classList.toggle("collapsed");
         var button = announcementsToggle.querySelector(".announcements__toggle");
 
@@ -457,6 +663,9 @@
 
     document.addEventListener("keydown", function (event) {
       var activeTag = document.activeElement ? document.activeElement.tagName : "";
+      if (isRoleSelectionActive()) {
+        return;
+      }
       if (
         (event.ctrlKey || event.metaKey) &&
         event.key.toLowerCase() === "b" &&
@@ -509,6 +718,10 @@
     }
 
     window.toggleCheck = function (item) {
+      if (isRoleSelectionActive()) {
+        return;
+      }
+
       item.classList.toggle("done");
       var state = {};
       document.querySelectorAll(".checklist__item").forEach(function (checkItem) {
@@ -527,6 +740,9 @@
     updateChecklistProgress();
 
     window.addEventListener("popstate", function () {
+      if (isRoleSelectionActive()) {
+        return;
+      }
       var historyId = window.location.hash ? window.location.hash.replace("#", "") : "intro";
       // Render popped history entries without adding duplicate entries back onto the stack.
       showSection(byId(historyId) ? historyId : "intro", true);
@@ -536,7 +752,7 @@
       ? window.location.hash.replace("#", "")
       : "intro";
     // On reload, force the default section; normal navigation still manages history.
-    showSection(byId(initialId) ? initialId : "intro", true);
+    showSection(byId(initialId) ? initialId : "intro", true, true);
   }
 
   function initSearch() {
@@ -555,6 +771,10 @@
     var activeIndex = 0;
 
     function openPanel() {
+      if (isRoleSelectionActive()) {
+        return;
+      }
+
       panel.classList.add("open");
 
       if (mainEl) {
@@ -688,6 +908,9 @@
           '<div class="search-result__title">' + item.title + "</div>" +
           '<div class="search-result__snippet">' + item.snippet + "</div>";
         result.addEventListener("click", function () {
+          if (isRoleSelectionActive()) {
+            return;
+          }
           setActive(index);
         });
         resultsContainer.appendChild(result);
@@ -699,6 +922,11 @@
     }
 
     input.addEventListener("input", function () {
+      if (isRoleSelectionActive()) {
+        input.value = "";
+        return;
+      }
+
       var value = input.value.toLowerCase().trim();
       activeIndex = 0;
       if (!value) {
@@ -710,6 +938,10 @@
     });
 
     input.addEventListener("keydown", function (event) {
+      if (isRoleSelectionActive()) {
+        return;
+      }
+
       if (!detailedResults.length) {
         return;
       }

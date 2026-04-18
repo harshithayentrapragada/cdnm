@@ -139,6 +139,8 @@
     .role-switch{font-size:11px;font-family:var(--font-body);font-weight:600;gap:4px;padding:6px 12px;border-radius:16px;background:#FFFFFF;border:none;color:var(--color-header-bg)}
     .theme-toggle{font-size:13px;font-weight:600;padding:5px 10px;border-radius:16px;background:#FFFFFF;border:none;color:var(--color-header-bg)}
     .sidebar-toggle:hover,.theme-toggle:hover,.role-switch:hover{background:#FFFFFF;border-color:#FFFFFF;color:var(--color-header-bg)}
+    body.role-selection-active .layout,body.role-selection-active .header__search,body.role-selection-active .header__actions{pointer-events:none}
+    body.role-selection-active .role-modal-overlay{pointer-events:auto}
 
     /* ===== BREADCRUMB ===== */
     .breadcrumb{display:flex;align-items:center;gap:6px;padding:12px 0 20px;font-size:12px;font-weight:400;color:var(--color-text-muted);min-height:20px}
@@ -383,10 +385,11 @@
     <h2>How will you be using this portal?</h2>
     <div class="role-modal__subtitle">Select your role to get started</div>
     <div class="role-cards">
-      <div class="role-card" onclick="selectRole('user')">
+      <!-- Internal role state resets on reload; app maps these to existing role-specific UI. -->
+      <div class="role-card" onclick="selectRole('researcher')">
         <div class="role-card__title">Researcher</div>
       </div>
-      <div class="role-card" onclick="selectRole('analyst')">
+      <div class="role-card" onclick="selectRole('developer')">
         <div class="role-card__title">Developer / Engineer</div>
       </div>
     </div>
@@ -993,8 +996,8 @@
       <section id="contacts" class="section">
         <div class="section__header"><span class="section__badge">Team</span><h2 class="section__title">Contacts &amp; User Group</h2></div>
         <div class="contact-grid">
-          <div class="contact-card"><div class="contact-card__name">Jody Sylvia</div><div class="contact-card__role">Manager, Data Services</div><div class="contact-card__detail">Strategy, escalations, and user group management</div></div>
-          <div class="contact-card"><div class="contact-card__name">Harshitha Yentrapragda</div><div class="contact-card__role">Data Engineer</div><div class="contact-card__detail">Portal development, pipeline engineering, and technical support</div></div>
+          <div class="contact-card"><div class="contact-card__name">Jody Sylvia</div><div class="contact-card__role">Research Informatics Manager</div><div class="contact-card__detail">Strategy, escalations, and user group management</div></div>
+          <div class="contact-card"><div class="contact-card__name">Harshitha Yentrapragada</div><div class="contact-card__role">Senior Data Engineer</div><div class="contact-card__detail">Portal development, pipeline engineering, and technical support</div></div>
           <div class="contact-card"><div class="contact-card__name">Data Services Team</div><div class="contact-card__role">General Inbox</div><div class="contact-card__detail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6d090c190c1e081f1b040e081e2d0e050c030304030a43050c1f1b0c1f0943080918">[email&#160;protected]</a></div></div>
         </div>
         <div class="divider"></div>
@@ -1037,34 +1040,47 @@
   <div class="portal-footer__left">
     <span>CDNM Gen3 Data Services Portal</span>
     <span class="portal-footer__version">v1.2.0</span>
-    <span>Last updated: March 30, 2026</span>
+    <span id="lastUpdated">Last updated: Loading...</span>
   </div>
-  <div class="portal-footer__right">Medical Research Data Services · Internal Use Only</div>
+  <div class="portal-footer__right">Internal Use Only</div>
 </footer>
 
 <!-- ===== SCRIPTS (optimized & fixed) ===== -->
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ===== Role selector =====
+var activeRole = null;
+
 function selectRole(role) {
-  document.body.setAttribute('data-role', role);
-  localStorage.setItem('userRole', role);
+  var normalizedRole = role === 'user' ? 'researcher' : role === 'analyst' ? 'developer' : role;
+  if (normalizedRole !== 'researcher' && normalizedRole !== 'developer') return;
+
+  activeRole = normalizedRole;
+  // Keep existing CSS role filters while resetting entry selection on each page load.
+  document.body.setAttribute('data-role', normalizedRole === 'researcher' ? 'user' : 'analyst');
+  document.body.classList.remove('role-selection-active');
   document.getElementById('roleModal').classList.add('hidden');
-  document.getElementById('roleSwitch').textContent = role === 'user' ? 'Researcher' : 'Developer';
+  document.getElementById('roleSwitch').textContent = normalizedRole === 'researcher' ? 'Researcher' : 'Developer / Engineer';
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Always show role modal on page load
-  document.getElementById('roleModal').classList.remove('hidden');
-
-  // Apply saved role
-  var saved = localStorage.getItem('userRole');
-  if (saved) {
-    document.body.setAttribute('data-role', saved);
-    document.getElementById('roleSwitch').textContent = saved === 'user' ? 'Researcher' : 'Developer';
+  var updated = document.getElementById('lastUpdated');
+  if (updated) {
+    // Use the browser-reported page timestamp so the footer does not rely on stale stored dates.
+    var modified = new Date(document.lastModified);
+    updated.textContent = 'Last updated: ' + (isNaN(modified.getTime()) ? 'Unavailable' : modified.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
   }
+
+  // Always show role modal on page load; ignore any previously stored role.
+  activeRole = null;
+  localStorage.removeItem('userRole');
+  sessionStorage.removeItem('userRole');
+  document.body.removeAttribute('data-role');
+  document.body.classList.add('role-selection-active');
+  document.getElementById('roleModal').classList.remove('hidden');
 
   // Role switch button
   document.getElementById('roleSwitch').addEventListener('click', function () {
+    document.body.classList.add('role-selection-active');
     document.getElementById('roleModal').classList.remove('hidden');
   });
 

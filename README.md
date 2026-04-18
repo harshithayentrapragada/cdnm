@@ -1,26 +1,40 @@
-CDNM Documentation Portal
-Overview
+# CDNM Gen3 Data Services Portal
 
-Plain React and CSS documentation portal converted from `portal.html`.
+## Overview
 
-This implementation focuses on usability, clarity, and establishing a scalable foundation for future enhancements.
+This repository contains the implementation of a documentation portal for Gen3 Data Services.
+The application provides a structured and user-friendly interface for navigating datasets, workflows, and system capabilities.
 
-- `index.html` loads React from a CDN and starts the app.
-- `styles/main.css` contains the portal styles from the original page.
-- `scripts/portal-markup.js` contains the portal HTML rendered by React.
-- `scripts/app.js` initializes navigation, role selection, theme switching, search, and checklist behavior.
+The project is designed with a focus on clarity, modularity, and maintainability, while also demonstrating a CI/CD-driven deployment workflow.
 
-The primary objectives of this project are:
+---
 
-Provide a clear entry point for users interacting with the Gen3 platform
-Organize resources in a role-specific and intuitive manner
-Reduce friction in accessing documentation and tools
-Establish a maintainable and deployable front-end structure
-Live Application
+## Live Application
 
-The application is deployed and accessible at:
+The application is deployed using GitHub Pages:
 
+**Production URL**
 https://harshithayentrapragada.github.io/cdnm/
+
+---
+
+## CI/CD Status
+
+![Deploy Status](https://img.shields.io/github/actions/workflow/status/harshithayentrapragada/cdnm/deploy.yml?branch=main)
+![Live Site](https://img.shields.io/badge/Live%20Site-Available-green)
+
+---
+
+## Repository Structure
+
+```
+.github/workflows/   CI/CD pipeline configuration (GitHub Actions)
+docs/                Architecture diagrams and documentation assets
+scripts/             Application logic (JavaScript)
+styles/              Styling (CSS)
+index.html           Entry point for the application
+portal-ui.html       Portal UI layout
+README.md            Project documentation
 ```
 
 ---
@@ -35,11 +49,11 @@ https://harshithayentrapragada.github.io/cdnm/
 
 ## Objective
 
-**Primary goals of this project:**
+This project demonstrates:
 
-* Provide a clear entry point for users interacting with the Gen3 platform
-* Organize resources in a role-specific and intuitive manner
-* Reduce friction in accessing documentation and tools
-* Establish a maintainable and deployable front-end structure
+* CI/CD pipeline implementation using GitHub Actions
+* Structured frontend architecture
+* Branch-based deployment workflow
+* Practical application of software engineering best practices
 
 ---

@@ -12,20 +12,20 @@
     PORTAL_TRANSITIONING: "portal-transitioning",
     PORTAL_TRANSITIONING_IN: "portal-transitioning-in",
     COLLAPSED: "collapsed",
-    ACTIVE_SECTION: "active-section"
+    ACTIVE_SECTION: "active-section",
   };
 
   var ROLES = {
     RESEARCHER: "researcher",
     DEVELOPER: "developer",
     USER: "user",
-    ANALYST: "analyst"
+    ANALYST: "analyst",
   };
 
   var DATA_ATTRS = {
     ROLE: "data-role",
     ARIA_HIDDEN: "aria-hidden",
-    ARIA_LABEL: "aria-label"
+    ARIA_LABEL: "aria-label",
   };
 
   var transitionDuration = 300; // milliseconds
@@ -37,7 +37,9 @@
   var activeRole = null;
 
   function isRoleSelectionActive() {
-    return !activeRole || document.body.classList.contains(CLASSES.ROLE_SELECTION);
+    return (
+      !activeRole || document.body.classList.contains(CLASSES.ROLE_SELECTION)
+    );
   }
 
   function openRoleSelector() {
@@ -53,9 +55,16 @@
 
   function setRole(role, hideModal) {
     var normalizedRole =
-      role === ROLES.USER ? ROLES.RESEARCHER : role === ROLES.ANALYST ? ROLES.DEVELOPER : role;
+      role === ROLES.USER
+        ? ROLES.RESEARCHER
+        : role === ROLES.ANALYST
+          ? ROLES.DEVELOPER
+          : role;
 
-    if (normalizedRole !== ROLES.RESEARCHER && normalizedRole !== ROLES.DEVELOPER) {
+    if (
+      normalizedRole !== ROLES.RESEARCHER &&
+      normalizedRole !== ROLES.DEVELOPER
+    ) {
       return;
     }
 
@@ -80,7 +89,10 @@
     setTimeout(function () {
       activeRole = normalizedRole;
       // Preserve existing role-based CSS without persisting the selected entry role.
-      document.body.setAttribute(DATA_ATTRS.ROLE, normalizedRole === ROLES.RESEARCHER ? ROLES.USER : ROLES.ANALYST);
+      document.body.setAttribute(
+        DATA_ATTRS.ROLE,
+        normalizedRole === ROLES.RESEARCHER ? ROLES.USER : ROLES.ANALYST,
+      );
       document.body.classList.remove(CLASSES.ROLE_SELECTION);
 
       var modal = byId("roleModal");
@@ -96,7 +108,10 @@
       if (normalizedRole === ROLES.RESEARCHER) {
         if (roleSwitch) {
           roleSwitch.classList.add(CLASSES.ACTIVE);
-          roleSwitch.setAttribute(DATA_ATTRS.ARIA_LABEL, "Current role: Researcher. Switch role");
+          roleSwitch.setAttribute(
+            DATA_ATTRS.ARIA_LABEL,
+            "Current role: Researcher. Switch role",
+          );
         }
         if (roleSwitchDev) {
           roleSwitchDev.classList.remove(CLASSES.ACTIVE);
@@ -104,7 +119,10 @@
       } else {
         if (roleSwitchDev) {
           roleSwitchDev.classList.add(CLASSES.ACTIVE);
-          roleSwitchDev.setAttribute(DATA_ATTRS.ARIA_LABEL, "Current role: Developer / Engineer. Switch role");
+          roleSwitchDev.setAttribute(
+            DATA_ATTRS.ARIA_LABEL,
+            "Current role: Developer / Engineer. Switch role",
+          );
         }
         if (roleSwitch) {
           roleSwitch.classList.remove(CLASSES.ACTIVE);
@@ -118,6 +136,10 @@
         window.getComputedStyle(currentSection).display === "none"
       ) {
         window.showSection("intro", true);
+      }
+
+      if (window.updateDocNavigation) {
+        window.updateDocNavigation();
       }
 
       // Start fade-in transition
@@ -153,7 +175,7 @@
       toggle.setAttribute("data-theme", isDark ? "dark" : "light");
       toggle.setAttribute(
         "aria-label",
-        isDark ? "Switch to light mode" : "Switch to dark mode"
+        isDark ? "Switch to light mode" : "Switch to dark mode",
       );
     }
 
@@ -259,7 +281,7 @@
       : modified.toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
-          day: "numeric"
+          day: "numeric",
         });
 
     updated.textContent = "Last updated: " + formatted;
@@ -283,7 +305,9 @@
     function openFeedbackModal(feedbackType) {
       type.value = feedbackType;
       title.textContent =
-        feedbackType === "improvement" ? "Suggest Improvement" : "Submit Feedback";
+        feedbackType === "improvement"
+          ? "Suggest Improvement"
+          : "Submit Feedback";
       modal.classList.remove(CLASSES.HIDDEN);
     }
 
@@ -291,7 +315,9 @@
       button.addEventListener("click", function (event) {
         event.preventDefault();
         // Keep feedback actions on-page and open the modal instead of changing sections.
-        openFeedbackModal(button.getAttribute("data-feedback-type") || "feedback");
+        openFeedbackModal(
+          button.getAttribute("data-feedback-type") || "feedback",
+        );
       });
     });
 
@@ -338,7 +364,12 @@
       var labels = ["support-ticket"];
 
       if (category) {
-        labels.push(category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""));
+        labels.push(
+          category
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, ""),
+        );
       }
 
       if (priority.indexOf("High") === 0) {
@@ -356,7 +387,7 @@
           (category || "Unspecified") +
           "\n\n## Priority\n" +
           priority,
-        labels: labels
+        labels: labels,
       };
     }
 
@@ -367,7 +398,7 @@
 
       var headers = {
         Accept: "application/vnd.github+json",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       };
 
       if (GITHUB_TOKEN) {
@@ -375,16 +406,22 @@
       }
 
       var response = await fetch(
-        "https://api.github.com/repos/" + REPO_OWNER + "/" + REPO_NAME + "/issues",
+        "https://api.github.com/repos/" +
+          REPO_OWNER +
+          "/" +
+          REPO_NAME +
+          "/issues",
         {
           method: "POST",
           headers: headers,
-          body: JSON.stringify(payload)
-        }
+          body: JSON.stringify(payload),
+        },
       );
 
       if (!response.ok) {
-        throw new Error("GitHub issue creation failed with status " + response.status + ".");
+        throw new Error(
+          "GitHub issue creation failed with status " + response.status + ".",
+        );
       }
 
       return response.json();
@@ -402,10 +439,16 @@
 
       try {
         var issue = await createGitHubIssue(getTicketPayload());
-        setTicketMessage("Ticket created successfully: #" + issue.number, "success");
+        setTicketMessage(
+          "Ticket created successfully: #" + issue.number,
+          "success",
+        );
         form.reset();
       } catch (error) {
-        setTicketMessage(error.message || "Unable to submit ticket. Please try again.", "error");
+        setTicketMessage(
+          error.message || "Unable to submit ticket. Please try again.",
+          "error",
+        );
       } finally {
         submit.disabled = false;
       }
@@ -413,15 +456,90 @@
   }
 
   function initNavigation() {
-    var allSections = Array.prototype.slice.call(document.querySelectorAll(".section"));
+    var allSections = Array.prototype.slice.call(
+      document.querySelectorAll(".section"),
+    );
     var quickAccess = document.querySelector(".quick-access");
     var announcementsWrapper = byId("announcements-wrapper");
     var allNavLinks = Array.prototype.slice.call(
-      document.querySelectorAll(".nav__link, .nav__sublink")
+      document.querySelectorAll(".nav__link, .nav__sublink"),
     );
     var sidebar = byId("sidebar");
     var mainEl = document.querySelector(".main");
     var sidebarToggle = byId("sidebarToggle");
+    var docNavPrev = byId("docNavPrev");
+    var docNavNext = byId("docNavNext");
+    var currentNavId = "intro";
+
+    var docNavigationOrder = [
+      "intro",
+      "what-we-provide",
+      "how-to-get-started",
+      "resources",
+      "data-dictionary",
+      "query-examples",
+      "analysis-notebooks",
+      "access",
+      "access-steps",
+      "elevated-access",
+      "usage",
+      "usage-overview",
+      "usage-explorer",
+      "usage-query-interface",
+      "usage-workspace",
+      "usage-profile",
+      "download-data",
+      "download-steps",
+      "download-formats",
+      "download-large",
+      "fair-data",
+      "fair-principles",
+      "data-commons",
+      "faqs",
+      "architecture",
+      "platform-core",
+      "pipeline-orchestration",
+      "custom-workflows",
+      "container-orchestration",
+      "compute-infrastructure",
+      "storage-layer",
+      "api-reference",
+      "api-auth",
+      "api-endpoints",
+      "api-graphql",
+      "data-model",
+      "data-model-overview",
+      "data-model-nodes",
+      "data-model-relationships",
+      "data-submission",
+      "submission-prepare",
+      "submission-validate",
+      "submission-monitor",
+      "infrastructure",
+      "infra-overview",
+      "infra-deploy",
+      "infra-monitoring",
+      "tools",
+      "tool-query-builder",
+      "tool-data-export",
+      "tool-notebook",
+      "help",
+      "help-steps",
+      "submit-ticket",
+      "help-docs",
+      "contacts",
+      "feedback",
+      "status",
+    ];
+    var docNavigationAliases = {
+      "panel-overview": "usage-overview",
+      "panel-dictionary": "data-dictionary",
+      "panel-explorer": "usage-explorer",
+      "panel-query": "query-examples",
+      "panel-workspace": "usage-workspace",
+      "panel-profile": "usage-profile",
+      "panel-notebooks": "analysis-notebooks",
+    };
 
     var sectionGroups = {
       intro: "Start Here",
@@ -448,7 +566,7 @@
       "help-docs": "Help & Support",
       contacts: "Help & Support",
       feedback: "Help & Support",
-      status: "Help & Support"
+      status: "Help & Support",
     };
 
     var sectionTitles = {};
@@ -462,7 +580,7 @@
 
     function getSubTitle(el) {
       var title = el.querySelector(
-        ".card__title, .resource-card__title, .subsection__title, h3, h4"
+        ".card__title, .resource-card__title, .subsection__title, h3, h4",
       );
       return title ? title.textContent : el.id || "";
     }
@@ -488,37 +606,53 @@
       }
 
       parentSection.classList.add("active-section");
-      Array.prototype.slice.call(parentSection.children).forEach(function (child) {
-        if (child.classList.contains("section__header")) {
-          return;
-        }
-
-        if (child.id === targetId || child.contains(target) || child === target) {
-          child.style.display = "";
+      Array.prototype.slice
+        .call(parentSection.children)
+        .forEach(function (child) {
+          if (child.classList.contains("section__header")) {
+            return;
+          }
 
           if (
-            child.classList.contains("card-grid") ||
-            child.classList.contains("resource-grid") ||
-            child.classList.contains("steps-grid")
+            child.id === targetId ||
+            child.contains(target) ||
+            child === target
           ) {
-            Array.prototype.slice.call(child.children).forEach(function (card) {
-              if (card.id === targetId || card.contains(target) || card === target) {
-                card.style.display = "";
-                card.style.gridColumn = "1 / -1";
-              } else {
-                card.style.display = "none";
-              }
-            });
+            child.style.display = "";
+
+            if (
+              child.classList.contains("card-grid") ||
+              child.classList.contains("resource-grid") ||
+              child.classList.contains("steps-grid")
+            ) {
+              Array.prototype.slice
+                .call(child.children)
+                .forEach(function (card) {
+                  if (
+                    card.id === targetId ||
+                    card.contains(target) ||
+                    card === target
+                  ) {
+                    card.style.display = "";
+                    card.style.gridColumn = "1 / -1";
+                  } else {
+                    card.style.display = "none";
+                  }
+                });
+            }
+          } else {
+            child.style.display = "none";
           }
-        } else {
-          child.style.display = "none";
-        }
-      });
+        });
 
       return parentSection;
     }
 
-    function updateBreadcrumb(parentSection, breadcrumbParentTitle, breadcrumbTitle) {
+    function updateBreadcrumb(
+      parentSection,
+      breadcrumbParentTitle,
+      breadcrumbTitle,
+    ) {
       var breadcrumb = byId("breadcrumb");
 
       if (!breadcrumb || !parentSection) {
@@ -560,6 +694,61 @@
       return navigation && navigation.type === "reload";
     }
 
+    function getNavLink(targetId) {
+      return document.querySelector(
+        '.nav__link[href="#' +
+          targetId +
+          '"], .nav__sublink[href="#' +
+          targetId +
+          '"]',
+      );
+    }
+
+    function isNavTargetAvailable(targetId) {
+      var link = getNavLink(targetId);
+      var role = document.body.getAttribute(DATA_ATTRS.ROLE);
+
+      if (!byId(targetId) || !link) {
+        return false;
+      }
+
+      if (role === ROLES.USER && link.closest(".analyst-only")) {
+        return false;
+      }
+
+      if (role === ROLES.ANALYST && link.closest(".user-only")) {
+        return false;
+      }
+
+      return true;
+    }
+
+    function getAvailableDocNavigation() {
+      return docNavigationOrder.filter(isNavTargetAvailable);
+    }
+
+    function updateDocNavigation(targetId) {
+      var available = getAvailableDocNavigation();
+      var navTargetId = docNavigationAliases[targetId] || targetId;
+      var index = available.indexOf(navTargetId);
+
+      if (!docNavPrev || !docNavNext || index === -1) {
+        if (docNavPrev && docNavNext) {
+          docNavPrev.hidden = true;
+          docNavNext.hidden = true;
+        }
+        return;
+      }
+
+      docNavPrev.hidden = index === 0;
+      docNavPrev.disabled = index === 0;
+      docNavPrev.setAttribute("data-target", available[index - 1] || "");
+
+      docNavNext.hidden = index === available.length - 1;
+      docNavNext.disabled = index === available.length - 1;
+      docNavNext.setAttribute("data-target", available[index + 1] || "");
+    }
+
     function showSection(targetId, replaceHistory, force) {
       if (!force && isRoleSelectionActive()) {
         return;
@@ -578,7 +767,10 @@
       }
 
       if (announcementsWrapper) {
-        announcementsWrapper.classList.toggle("active-section", targetId === "intro");
+        announcementsWrapper.classList.toggle(
+          "active-section",
+          targetId === "intro",
+        );
       }
 
       if (!targetId) {
@@ -591,6 +783,8 @@
         return;
       }
 
+      currentNavId = targetId;
+
       var parentSection = null;
       var breadcrumbTitle = "";
       var breadcrumbParentTitle = "";
@@ -602,7 +796,9 @@
         breadcrumbTitle = sectionTitles[target.id] || target.id;
       } else {
         parentSection = isolateSubElement(targetId);
-        breadcrumbParentTitle = parentSection ? sectionTitles[parentSection.id] || "" : "";
+        breadcrumbParentTitle = parentSection
+          ? sectionTitles[parentSection.id] || ""
+          : "";
         breadcrumbTitle = getSubTitle(target) || targetId;
         isSubContent = true;
       }
@@ -638,21 +834,48 @@
       allNavLinks.forEach(function (link) {
         link.classList.remove("active");
       });
-      var activeLink = document.querySelector(
-        '.nav__link[href="#' + targetId + '"], .nav__sublink[href="#' + targetId + '"]'
-      );
+      var activeLink = getNavLink(targetId);
 
       if (activeLink) {
         activeLink.classList.add("active");
       }
 
+      updateDocNavigation(targetId);
+
       if (window.location.hash !== "#" + targetId) {
         // Use pushState for user navigation so browser back/forward buttons track state.
-        history[replaceHistory ? "replaceState" : "pushState"](null, "", "#" + targetId);
+        history[replaceHistory ? "replaceState" : "pushState"](
+          null,
+          "",
+          "#" + targetId,
+        );
       }
     }
 
     window.showSection = showSection;
+    window.updateDocNavigation = function () {
+      updateDocNavigation(currentNavId);
+    };
+
+    if (docNavPrev) {
+      docNavPrev.addEventListener("click", function () {
+        var targetId = docNavPrev.getAttribute("data-target");
+
+        if (!docNavPrev.disabled && targetId) {
+          showSection(targetId);
+        }
+      });
+    }
+
+    if (docNavNext) {
+      docNavNext.addEventListener("click", function () {
+        var targetId = docNavNext.getAttribute("data-target");
+
+        if (!docNavNext.disabled && targetId) {
+          showSection(targetId);
+        }
+      });
+    }
 
     document.querySelectorAll(".nav__group-label").forEach(function (label) {
       label.addEventListener("click", function () {
@@ -677,7 +900,9 @@
           link.classList.toggle("collapsed");
           var el = link.nextElementSibling;
           while (el && el.classList.contains("nav__sublink")) {
-            el.style.display = link.classList.contains("collapsed") ? "none" : "block";
+            el.style.display = link.classList.contains("collapsed")
+              ? "none"
+              : "block";
             el = el.nextElementSibling;
           }
           return;
@@ -735,7 +960,9 @@
           return;
         }
         announcementsEl.classList.toggle("collapsed");
-        var button = announcementsToggle.querySelector(".announcements__toggle");
+        var button = announcementsToggle.querySelector(
+          ".announcements__toggle",
+        );
 
         if (button) {
           button.textContent = announcementsEl.classList.contains("collapsed")
@@ -746,7 +973,9 @@
     }
 
     document.addEventListener("keydown", function (event) {
-      var activeTag = document.activeElement ? document.activeElement.tagName : "";
+      var activeTag = document.activeElement
+        ? document.activeElement.tagName
+        : "";
       if (isRoleSelectionActive()) {
         return;
       }
@@ -758,7 +987,11 @@
         event.preventDefault();
         sidebarToggle.click();
       }
-      if (event.key === "/" && activeTag !== "INPUT" && activeTag !== "TEXTAREA") {
+      if (
+        event.key === "/" &&
+        activeTag !== "INPUT" &&
+        activeTag !== "TEXTAREA"
+      ) {
         var searchInput = byId("searchInput");
         if (searchInput) {
           event.preventDefault();
@@ -794,7 +1027,9 @@
       var items = document.querySelectorAll(".checklist__item");
       var done = document.querySelectorAll(".checklist__item.done");
       var progress = byId("checklistProgress");
-      var pct = items.length ? Math.round((done.length / items.length) * 100) : 0;
+      var pct = items.length
+        ? Math.round((done.length / items.length) * 100)
+        : 0;
 
       if (progress) {
         progress.style.width = pct + "%";
@@ -808,14 +1043,19 @@
 
       item.classList.toggle("done");
       var state = {};
-      document.querySelectorAll(".checklist__item").forEach(function (checkItem) {
-        state[checkItem.getAttribute("data-check")] = checkItem.classList.contains("done");
-      });
+      document
+        .querySelectorAll(".checklist__item")
+        .forEach(function (checkItem) {
+          state[checkItem.getAttribute("data-check")] =
+            checkItem.classList.contains("done");
+        });
       localStorage.setItem("checklistState", JSON.stringify(state));
       updateChecklistProgress();
     };
 
-    var savedChecklist = JSON.parse(localStorage.getItem("checklistState") || "{}");
+    var savedChecklist = JSON.parse(
+      localStorage.getItem("checklistState") || "{}",
+    );
     document.querySelectorAll(".checklist__item").forEach(function (item) {
       if (savedChecklist[item.getAttribute("data-check")]) {
         item.classList.add("done");
@@ -827,14 +1067,17 @@
       if (isRoleSelectionActive()) {
         return;
       }
-      var historyId = window.location.hash ? window.location.hash.replace("#", "") : "intro";
+      var historyId = window.location.hash
+        ? window.location.hash.replace("#", "")
+        : "intro";
       // Render popped history entries without adding duplicate entries back onto the stack.
       showSection(byId(historyId) ? historyId : "intro", true);
     });
 
-    var initialId = !isReloadNavigation() && window.location.hash
-      ? window.location.hash.replace("#", "")
-      : "intro";
+    var initialId =
+      !isReloadNavigation() && window.location.hash
+        ? window.location.hash.replace("#", "")
+        : "intro";
     // On reload, force the default section; normal navigation still manages history.
     showSection(byId(initialId) ? initialId : "intro", true, true);
   }
@@ -900,7 +1143,10 @@
         (start > 0 ? "..." : "") +
         text.substring(start, end).trim() +
         (end < text.length ? "..." : "");
-      return snippet.replace(new RegExp("(" + escapeRegExp(query) + ")", "gi"), "<mark>$1</mark>");
+      return snippet.replace(
+        new RegExp("(" + escapeRegExp(query) + ")", "gi"),
+        "<mark>$1</mark>",
+      );
     }
 
     function getTitle(section) {
@@ -915,9 +1161,11 @@
 
     function setActive(index) {
       activeIndex = index;
-      resultsContainer.querySelectorAll(".search-result").forEach(function (result, resultIndex) {
-        result.classList.toggle("active", resultIndex === index);
-      });
+      resultsContainer
+        .querySelectorAll(".search-result")
+        .forEach(function (result, resultIndex) {
+          result.classList.toggle("active", resultIndex === index);
+        });
 
       var item = detailedResults[index];
       if (item && item.parentSection && window.showSection) {
@@ -942,7 +1190,7 @@
         var sectionTitle = getTitle(section);
         var sectionBadge = getBadge(section);
         var cards = section.querySelectorAll(
-          ".card, .resource-card, .step, .subsection, .service-item, .doc-block, .contact-card"
+          ".card, .resource-card, .step, .subsection, .service-item, .doc-block, .contact-card",
         );
         var added = false;
 
@@ -954,14 +1202,14 @@
           added = true;
           var title = card.querySelector(
             ".card__title, .resource-card__title, .step__title, .subsection__title, " +
-              ".service-item__title, h4, .contact-card__name"
+              ".service-item__title, h4, .contact-card__name",
           );
           detailedResults.push({
             el: card,
             parentSection: section,
             title: title ? title.textContent : sectionTitle,
             badge: sectionBadge,
-            snippet: getSnippet(card, query)
+            snippet: getSnippet(card, query),
           });
         });
 
@@ -971,16 +1219,19 @@
             parentSection: section,
             title: sectionTitle,
             badge: sectionBadge,
-            snippet: getSnippet(section, query)
+            snippet: getSnippet(section, query),
           });
         }
       });
 
       countEl.textContent =
-        detailedResults.length + " result" + (detailedResults.length !== 1 ? "s" : "");
+        detailedResults.length +
+        " result" +
+        (detailedResults.length !== 1 ? "s" : "");
 
       if (!detailedResults.length) {
-        resultsContainer.innerHTML = '<div class="search-panel__empty">No results found</div>';
+        resultsContainer.innerHTML =
+          '<div class="search-panel__empty">No results found</div>';
         return;
       }
 
@@ -988,9 +1239,15 @@
         var result = document.createElement("div");
         result.className = "search-result" + (index === 0 ? " active" : "");
         result.innerHTML =
-          (item.badge ? '<div class="search-result__badge">' + item.badge + "</div>" : "") +
-          '<div class="search-result__title">' + item.title + "</div>" +
-          '<div class="search-result__snippet">' + item.snippet + "</div>";
+          (item.badge
+            ? '<div class="search-result__badge">' + item.badge + "</div>"
+            : "") +
+          '<div class="search-result__title">' +
+          item.title +
+          "</div>" +
+          '<div class="search-result__snippet">' +
+          item.snippet +
+          "</div>";
         result.addEventListener("click", function () {
           if (isRoleSelectionActive()) {
             return;
@@ -1052,7 +1309,7 @@
 
     return React.createElement("div", {
       className: "portal-app",
-      dangerouslySetInnerHTML: { __html: window.PORTAL_MARKUP || "" }
+      dangerouslySetInnerHTML: { __html: window.PORTAL_MARKUP || "" },
     });
   }
 

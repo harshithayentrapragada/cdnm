@@ -15,13 +15,13 @@ const mimeTypes = {
   ".jpeg": "image/jpeg",
   ".gif": "image/gif",
   ".svg": "image/svg+xml",
-  ".ico": "image/x-icon"
+  ".ico": "image/x-icon",
 };
 
 function send(res, status, body, type) {
   res.writeHead(status, {
     "Content-Type": type || "text/plain; charset=utf-8",
-    "Cache-Control": "no-store"
+    "Cache-Control": "no-store",
   });
   res.end(body);
 }

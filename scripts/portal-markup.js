@@ -82,76 +82,81 @@ window.PORTAL_MARKUP = `
 
 <div class="layout">
   <aside class="sidebar" id="sidebar" role="navigation">
-    <div class="nav__group">
-      <span class="nav__group-label">Start Here</span>
-      <a href="#intro" class="nav__link">Welcome</a>
-      <a href="#what-we-provide" class="nav__sublink">What We Offer</a>
-      <a href="#how-to-get-started" class="nav__sublink">How Do I Get Started?</a>
-      <a href="#resources" class="nav__link">Key Resources</a>
-      <a href="#data-dictionary" class="nav__sublink">Data Dictionary</a>
-      <a href="#query-examples" class="nav__sublink">Query Examples</a>
-      <a href="#analysis-notebooks" class="nav__sublink">Analysis Notebooks</a>
+    <div class="sidebar__nav">
+      <div class="nav__group">
+        <span class="nav__group-label">Start Here</span>
+        <a href="#intro" class="nav__link">Welcome</a>
+        <a href="#what-we-provide" class="nav__sublink">What We Offer</a>
+        <a href="#how-to-get-started" class="nav__sublink">How Do I Get Started?</a>
+        <a href="#resources" class="nav__link">Key Resources</a>
+        <a href="#data-dictionary" class="nav__sublink">Data Dictionary</a>
+        <a href="#query-examples" class="nav__sublink">Query Examples</a>
+        <a href="#analysis-notebooks" class="nav__sublink">Analysis Notebooks</a>
 
+      </div>
+      <div class="nav__group">
+        <span class="nav__group-label">How Do I…</span>
+        <a href="#access" class="nav__link analyst-only">Get Access</a>
+        <a href="#access-steps" class="nav__sublink analyst-only">Sign-In Steps</a>
+        <a href="#elevated-access" class="nav__sublink analyst-only">Request More Access</a>
+        <a href="#usage" class="nav__link">Use the Platform</a>
+        <a href="#usage-overview" class="nav__sublink">Getting Started</a>
+        <a href="#usage-explorer" class="nav__sublink">Explore Data</a>
+        <a href="#usage-query-interface" class="nav__sublink">Run a Query</a>
+        <a href="#usage-workspace" class="nav__sublink">Workspace</a>
+        <a href="#usage-profile" class="nav__sublink">My Profile</a>
+        <a href="#download-data" class="nav__link user-only">Download Data</a>
+        <a href="#download-steps" class="nav__sublink user-only">Step-by-Step Guide</a>
+        <a href="#download-formats" class="nav__sublink user-only">File Formats</a>
+        <a href="#download-large" class="nav__sublink user-only">Large Downloads</a>
+        <a href="#fair-data" class="nav__link">Understand FAIR Data</a>
+        <a href="#fair-principles" class="nav__sublink">What is FAIR?</a>
+        <a href="#data-commons" class="nav__sublink">What is a Data Commons?</a>
+        <a href="#faqs" class="nav__link user-only">FAQs</a>
+      </div>
+      <div class="nav__group analyst-only">
+        <span class="nav__group-label">Technical Details</span>
+        <a href="#architecture" class="nav__link">System Architecture</a>
+        <a href="#platform-core" class="nav__sublink">Data Platform Core</a>
+        <a href="#pipeline-orchestration" class="nav__sublink">Pipelines</a>
+        <a href="#custom-workflows" class="nav__sublink">Custom Workflows</a>
+        <a href="#container-orchestration" class="nav__sublink">Containers &amp; K8s</a>
+        <a href="#compute-infrastructure" class="nav__sublink">Compute</a>
+        <a href="#storage-layer" class="nav__sublink">Storage</a>
+        <a href="#api-reference" class="nav__link">API Reference</a>
+        <a href="#api-auth" class="nav__sublink">Authentication</a>
+        <a href="#api-endpoints" class="nav__sublink">Endpoints</a>
+        <a href="#api-graphql" class="nav__sublink">GraphQL Queries</a>
+        <a href="#data-model" class="nav__link">Data Model</a>
+        <a href="#data-model-overview" class="nav__sublink">Schema Overview</a>
+        <a href="#data-model-nodes" class="nav__sublink">Node Types</a>
+        <a href="#data-model-relationships" class="nav__sublink">Relationships</a>
+        <a href="#data-submission" class="nav__link">Submit Data (ETL)</a>
+        <a href="#submission-prepare" class="nav__sublink">Prepare Your Data</a>
+        <a href="#submission-validate" class="nav__sublink">Validate &amp; Submit</a>
+        <a href="#submission-monitor" class="nav__sublink">Monitor Jobs</a>
+        <a href="#infrastructure" class="nav__link">Infrastructure</a>
+        <a href="#infra-overview" class="nav__sublink">Infra Overview</a>
+        <a href="#infra-deploy" class="nav__sublink">Deployment</a>
+        <a href="#infra-monitoring" class="nav__sublink">Monitoring</a>
+        <a href="#tools" class="nav__link">Developer Tools</a>
+        <a href="#tool-query-builder" class="nav__sublink">Query Builder</a>
+        <a href="#tool-data-export" class="nav__sublink">Data Export</a>
+        <a href="#tool-notebook" class="nav__sublink">Notebooks</a>
+      </div>
+      <div class="nav__group">
+        <span class="nav__group-label">Help &amp; Support</span>
+        <a href="#help" class="nav__link">I Need Help</a>
+        <a href="#help-steps" class="nav__sublink">How to Get Help</a>
+        <a href="#submit-ticket" class="nav__sublink">Submit a Ticket</a>
+        <a href="#help-docs" class="nav__link">Guides &amp; Docs</a>
+        <a href="#contacts" class="nav__link">Contact Us</a>
+        <a href="#feedback" class="nav__link">Give Feedback</a>
+        <a href="#status" class="nav__link">System Status</a>
+      </div>
     </div>
-    <div class="nav__group">
-      <span class="nav__group-label">How Do I…</span>
-      <a href="#access" class="nav__link analyst-only">Get Access</a>
-      <a href="#access-steps" class="nav__sublink analyst-only">Sign-In Steps</a>
-      <a href="#elevated-access" class="nav__sublink analyst-only">Request More Access</a>
-      <a href="#usage" class="nav__link">Use the Platform</a>
-      <a href="#usage-overview" class="nav__sublink">Getting Started</a>
-      <a href="#usage-explorer" class="nav__sublink">Explore Data</a>
-      <a href="#usage-query-interface" class="nav__sublink">Run a Query</a>
-      <a href="#usage-workspace" class="nav__sublink">Workspace</a>
-      <a href="#usage-profile" class="nav__sublink">My Profile</a>
-      <a href="#download-data" class="nav__link user-only">Download Data</a>
-      <a href="#download-steps" class="nav__sublink user-only">Step-by-Step Guide</a>
-      <a href="#download-formats" class="nav__sublink user-only">File Formats</a>
-      <a href="#download-large" class="nav__sublink user-only">Large Downloads</a>
-      <a href="#fair-data" class="nav__link">Understand FAIR Data</a>
-      <a href="#fair-principles" class="nav__sublink">What is FAIR?</a>
-      <a href="#data-commons" class="nav__sublink">What is a Data Commons?</a>
-      <a href="#faqs" class="nav__link user-only">FAQs</a>
-    </div>
-    <div class="nav__group analyst-only">
-      <span class="nav__group-label">Technical Details</span>
-      <a href="#architecture" class="nav__link">System Architecture</a>
-      <a href="#platform-core" class="nav__sublink">Data Platform Core</a>
-      <a href="#pipeline-orchestration" class="nav__sublink">Pipelines</a>
-      <a href="#custom-workflows" class="nav__sublink">Custom Workflows</a>
-      <a href="#container-orchestration" class="nav__sublink">Containers &amp; K8s</a>
-      <a href="#compute-infrastructure" class="nav__sublink">Compute</a>
-      <a href="#storage-layer" class="nav__sublink">Storage</a>
-      <a href="#api-reference" class="nav__link">API Reference</a>
-      <a href="#api-auth" class="nav__sublink">Authentication</a>
-      <a href="#api-endpoints" class="nav__sublink">Endpoints</a>
-      <a href="#api-graphql" class="nav__sublink">GraphQL Queries</a>
-      <a href="#data-model" class="nav__link">Data Model</a>
-      <a href="#data-model-overview" class="nav__sublink">Schema Overview</a>
-      <a href="#data-model-nodes" class="nav__sublink">Node Types</a>
-      <a href="#data-model-relationships" class="nav__sublink">Relationships</a>
-      <a href="#data-submission" class="nav__link">Submit Data (ETL)</a>
-      <a href="#submission-prepare" class="nav__sublink">Prepare Your Data</a>
-      <a href="#submission-validate" class="nav__sublink">Validate &amp; Submit</a>
-      <a href="#submission-monitor" class="nav__sublink">Monitor Jobs</a>
-      <a href="#infrastructure" class="nav__link">Infrastructure</a>
-      <a href="#infra-overview" class="nav__sublink">Infra Overview</a>
-      <a href="#infra-deploy" class="nav__sublink">Deployment</a>
-      <a href="#infra-monitoring" class="nav__sublink">Monitoring</a>
-      <a href="#tools" class="nav__link">Developer Tools</a>
-      <a href="#tool-query-builder" class="nav__sublink">Query Builder</a>
-      <a href="#tool-data-export" class="nav__sublink">Data Export</a>
-      <a href="#tool-notebook" class="nav__sublink">Notebooks</a>
-    </div>
-    <div class="nav__group">
-      <span class="nav__group-label">Help &amp; Support</span>
-      <a href="#help" class="nav__link">I Need Help</a>
-      <a href="#help-steps" class="nav__sublink">How to Get Help</a>
-      <a href="#submit-ticket" class="nav__sublink">Submit a Ticket</a>
-      <a href="#help-docs" class="nav__link">Guides &amp; Docs</a>
-      <a href="#contacts" class="nav__link">Contact Us</a>
-      <a href="#feedback" class="nav__link">Give Feedback</a>
-      <a href="#status" class="nav__link">System Status</a>
+    <div class="sidebar__footer">
+      <a class="sidebar__github" href="https://github.com/uc-cdis/gen3" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
     </div>
   </aside>
 
@@ -186,7 +191,7 @@ window.PORTAL_MARKUP = `
         </div>
       </div>
 
-      <!-- ===== QUICK ACCESS — FIX APPLIED: links go directly to external URLs ===== -->
+      <!-- ===== QUICK ACCESS ===== -->
       <div class="quick-access" id="quick-access">
         <div class="quick-access__title">Quick Access</div>
         <div class="quick-access__grid">
@@ -717,6 +722,11 @@ window.PORTAL_MARKUP = `
           <div class="status-card"><div class="status-card__dot status-card__dot--green"></div><div class="status-card__info"><div class="status-card__name">Storage Layer</div><div class="status-card__state">Operational</div></div></div>
         </div>
       </section>
+
+      <div class="doc-nav" aria-label="Document navigation">
+        <button type="button" class="doc-nav__prev" id="docNavPrev">← Previous</button>
+        <button type="button" class="doc-nav__next" id="docNavNext">Next →</button>
+      </div>
 
     </div>
   </main>

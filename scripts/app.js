@@ -29,12 +29,67 @@
   };
 
   var transitionDuration = 300; // milliseconds
+  var CURRENT_PAGE_STORAGE_KEY = "currentPage";
+  var ROLE_STORAGE_KEY = "userRole";
 
   function byId(id) {
     return document.getElementById(id);
   }
 
   var activeRole = null;
+
+  function normalizeRole(role) {
+    return role === ROLES.USER
+      ? ROLES.RESEARCHER
+      : role === ROLES.ANALYST
+        ? ROLES.DEVELOPER
+        : role;
+  }
+
+  function isValidRole(role) {
+    return role === ROLES.RESEARCHER || role === ROLES.DEVELOPER;
+  }
+
+  function syncRoleUi(normalizedRole, hideModal) {
+    document.body.setAttribute(
+      DATA_ATTRS.ROLE,
+      normalizedRole === ROLES.RESEARCHER ? ROLES.USER : ROLES.ANALYST,
+    );
+    document.body.classList.remove(CLASSES.ROLE_SELECTION);
+
+    var modal = byId("roleModal");
+    var roleSwitch = byId("roleSwitch");
+    var roleSwitchDev = byId("roleSwitchDev");
+
+    if (hideModal && modal) {
+      modal.classList.add(CLASSES.HIDDEN);
+      modal.setAttribute(DATA_ATTRS.ARIA_HIDDEN, "true");
+    }
+
+    if (normalizedRole === ROLES.RESEARCHER) {
+      if (roleSwitch) {
+        roleSwitch.classList.add(CLASSES.ACTIVE);
+        roleSwitch.setAttribute(
+          DATA_ATTRS.ARIA_LABEL,
+          "Current role: Researcher. Switch role",
+        );
+      }
+      if (roleSwitchDev) {
+        roleSwitchDev.classList.remove(CLASSES.ACTIVE);
+      }
+    } else {
+      if (roleSwitchDev) {
+        roleSwitchDev.classList.add(CLASSES.ACTIVE);
+        roleSwitchDev.setAttribute(
+          DATA_ATTRS.ARIA_LABEL,
+          "Current role: Developer / Engineer. Switch role",
+        );
+      }
+      if (roleSwitch) {
+        roleSwitch.classList.remove(CLASSES.ACTIVE);
+      }
+    }
+  }
 
   function isRoleSelectionActive() {
     return (
@@ -54,22 +109,15 @@
   }
 
   function setRole(role, hideModal) {
-    var normalizedRole =
-      role === ROLES.USER
-        ? ROLES.RESEARCHER
-        : role === ROLES.ANALYST
-          ? ROLES.DEVELOPER
-          : role;
+    var normalizedRole = normalizeRole(role);
 
-    if (
-      normalizedRole !== ROLES.RESEARCHER &&
-      normalizedRole !== ROLES.DEVELOPER
-    ) {
+    if (!isValidRole(normalizedRole)) {
       return;
     }
 
     // Exit early if already in this role to avoid unnecessary transitions
     if (activeRole === normalizedRole) {
+      syncRoleUi(normalizedRole, hideModal);
       return;
     }
 
@@ -88,46 +136,8 @@
     // Brief delay for smooth UX
     setTimeout(function () {
       activeRole = normalizedRole;
-      // Preserve existing role-based CSS without persisting the selected entry role.
-      document.body.setAttribute(
-        DATA_ATTRS.ROLE,
-        normalizedRole === ROLES.RESEARCHER ? ROLES.USER : ROLES.ANALYST,
-      );
-      document.body.classList.remove(CLASSES.ROLE_SELECTION);
-
-      var modal = byId("roleModal");
-      var roleSwitch = byId("roleSwitch");
-      var roleSwitchDev = byId("roleSwitchDev");
-
-      if (hideModal && modal) {
-        modal.classList.add(CLASSES.HIDDEN);
-        modal.setAttribute(DATA_ATTRS.ARIA_HIDDEN, "true");
-      }
-
-      // Update segmented control active states
-      if (normalizedRole === ROLES.RESEARCHER) {
-        if (roleSwitch) {
-          roleSwitch.classList.add(CLASSES.ACTIVE);
-          roleSwitch.setAttribute(
-            DATA_ATTRS.ARIA_LABEL,
-            "Current role: Researcher. Switch role",
-          );
-        }
-        if (roleSwitchDev) {
-          roleSwitchDev.classList.remove(CLASSES.ACTIVE);
-        }
-      } else {
-        if (roleSwitchDev) {
-          roleSwitchDev.classList.add(CLASSES.ACTIVE);
-          roleSwitchDev.setAttribute(
-            DATA_ATTRS.ARIA_LABEL,
-            "Current role: Developer / Engineer. Switch role",
-          );
-        }
-        if (roleSwitch) {
-          roleSwitch.classList.remove(CLASSES.ACTIVE);
-        }
-      }
+      sessionStorage.setItem(ROLE_STORAGE_KEY, normalizedRole);
+      syncRoleUi(normalizedRole, hideModal);
 
       var currentSection = document.querySelector("." + CLASSES.ACTIVE_SECTION);
       if (
@@ -207,11 +217,19 @@
     var roleSwitch = byId("roleSwitch");
     var roleSwitchDev = byId("roleSwitchDev");
 
-    // Always reset the entry role on page load; do not restore old persisted roles.
-    activeRole = null;
+    // Keep the chosen role within the current tab so reloads do not reopen the entry modal.
+    activeRole = normalizeRole(sessionStorage.getItem(ROLE_STORAGE_KEY));
+    if (!isValidRole(activeRole)) {
+      activeRole = null;
+    }
     document.body.removeAttribute(DATA_ATTRS.ROLE);
+    // Clear any old localStorage entries that should not persist
     localStorage.removeItem("userRole");
-    sessionStorage.removeItem("userRole");
+    localStorage.removeItem("activeSectionId");
+
+    if (activeRole) {
+      syncRoleUi(activeRole, true);
+    }
 
     if (roleModal) {
       roleModal.addEventListener("click", function (event) {
@@ -261,7 +279,7 @@
     initSearch();
     initFooter();
 
-    if (roleModal) {
+    if (roleModal && !activeRole) {
       roleModal.setAttribute("aria-hidden", "false");
       openRoleSelector();
     }
@@ -689,11 +707,6 @@
       breadcrumb.innerHTML = html;
     }
 
-    function isReloadNavigation() {
-      var navigation = performance.getEntriesByType("navigation")[0];
-      return navigation && navigation.type === "reload";
-    }
-
     function getNavLink(targetId) {
       return document.querySelector(
         '.nav__link[href="#' +
@@ -784,6 +797,10 @@
       }
 
       currentNavId = targetId;
+      // Store current section in sessionStorage to preserve on page refresh.
+      // sessionStorage is per-tab (not cross-tab), so it resets when opening in a new tab/session,
+      // but persists during a single tab's lifetime (including page reloads).
+      sessionStorage.setItem(CURRENT_PAGE_STORAGE_KEY, targetId);
 
       var parentSection = null;
       var breadcrumbTitle = "";
@@ -1074,11 +1091,10 @@
       showSection(byId(historyId) ? historyId : "intro", true);
     });
 
-    var initialId =
-      !isReloadNavigation() && window.location.hash
-        ? window.location.hash.replace("#", "")
-        : "intro";
-    // On reload, force the default section; normal navigation still manages history.
+    var savedSectionId = sessionStorage.getItem(CURRENT_PAGE_STORAGE_KEY);
+    var initialId = savedSectionId || "intro";
+
+    // Restore the last valid section in this tab; fall back to the default intro.
     showSection(byId(initialId) ? initialId : "intro", true, true);
   }
 

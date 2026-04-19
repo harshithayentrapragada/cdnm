@@ -370,6 +370,7 @@
 }
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 body {
   font-family: var(--font-body);
@@ -942,28 +943,37 @@ body.role-selection-active .role-modal-overlay {
 /* ===== LAYOUT ===== */
 .layout {
   display: flex;
+  align-items: stretch;
   margin-top: var(--header-height);
   min-height: calc(100vh - var(--header-height));
+  width: 100%;
+  overflow-x: hidden;
 }
 .sidebar {
+  flex: 0 0 var(--sidebar-width);
   width: var(--sidebar-width);
   background: var(--color-sidebar-bg);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
-  position: fixed;
+  position: sticky;
   top: var(--header-height);
-  bottom: 0;
-  left: 0;
+  align-self: flex-start;
+  height: calc(100vh - var(--header-height));
   overflow: hidden;
   display: flex;
   flex-direction: column;
   z-index: 500;
   transition:
+    flex-basis 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     background 0.3s,
     border-color 0.3s;
 }
 .sidebar.collapsed {
-  transform: translateX(-100%);
+  flex-basis: 0;
+  width: 0;
+  border-right: 0;
+  transform: none;
 }
 .sidebar__nav {
   flex: 1;
@@ -1086,19 +1096,18 @@ body.role-selection-active .role-modal-overlay {
 
 /* ===== MAIN ===== */
 .main {
-  flex: 1;
-  margin: 0 auto;
-  padding: 0 48px 80px;
-  max-width: 960px;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 24px 48px 80px;
   width: 100%;
   transition: background 0.3s;
   background: var(--color-bg);
 }
-.main.sidebar-hidden {
-  margin: 0 auto;
-}
 .content {
   max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 /* ===== ANNOUNCEMENTS ===== */
@@ -2043,9 +2052,6 @@ body.role-selection-active .role-modal-overlay {
   gap: 12px;
   box-sizing: border-box;
 }
-.main.sidebar-hidden ~ .portal-footer {
-  margin: 0 auto;
-}
 .portal-footer__left {
   font-size: 11px;
   font-weight: 400;
@@ -2301,10 +2307,17 @@ body.role-selection-active .role-modal-overlay {
 @media (max-width: 900px) {
   .sidebar {
     position: static;
+    flex: 0 0 auto;
     width: 100%;
+    height: auto;
     border-right: none;
     border-bottom: 1px solid var(--color-border);
     overflow: visible;
+  }
+  .sidebar.collapsed {
+    flex-basis: auto;
+    width: 100%;
+    border-bottom: 1px solid var(--color-border);
   }
   .sidebar__nav {
     overflow: visible;

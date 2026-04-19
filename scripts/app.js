@@ -3,6 +3,33 @@
 (function () {
   "use strict";
 
+  // ===== CONSTANTS & UTILITIES =====
+  var CLASSES = {
+    HIDDEN: "hidden",
+    ACTIVE: "segmented-control__segment--active",
+    ROLE_SELECTION: "role-selection-active",
+    SIDEBAR_HIDDEN: "sidebar-hidden",
+    PORTAL_TRANSITIONING: "portal-transitioning",
+    PORTAL_TRANSITIONING_IN: "portal-transitioning-in",
+    COLLAPSED: "collapsed",
+    ACTIVE_SECTION: "active-section"
+  };
+
+  var ROLES = {
+    RESEARCHER: "researcher",
+    DEVELOPER: "developer",
+    USER: "user",
+    ANALYST: "analyst"
+  };
+
+  var DATA_ATTRS = {
+    ROLE: "data-role",
+    ARIA_HIDDEN: "aria-hidden",
+    ARIA_LABEL: "aria-label"
+  };
+
+  var transitionDuration = 300; // milliseconds
+
   function byId(id) {
     return document.getElementById(id);
   }
@@ -10,57 +37,105 @@
   var activeRole = null;
 
   function isRoleSelectionActive() {
-    return !activeRole || document.body.classList.contains("role-selection-active");
+    return !activeRole || document.body.classList.contains(CLASSES.ROLE_SELECTION);
   }
 
   function openRoleSelector() {
     var modal = byId("roleModal");
 
-    document.body.classList.add("role-selection-active");
+    document.body.classList.add(CLASSES.ROLE_SELECTION);
 
     if (modal) {
-      modal.classList.remove("hidden");
-      modal.setAttribute("aria-hidden", "false");
+      modal.classList.remove(CLASSES.HIDDEN);
+      modal.setAttribute(DATA_ATTRS.ARIA_HIDDEN, "false");
     }
   }
 
   function setRole(role, hideModal) {
     var normalizedRole =
-      role === "user" ? "researcher" : role === "analyst" ? "developer" : role;
+      role === ROLES.USER ? ROLES.RESEARCHER : role === ROLES.ANALYST ? ROLES.DEVELOPER : role;
 
-    if (normalizedRole !== "researcher" && normalizedRole !== "developer") {
+    if (normalizedRole !== ROLES.RESEARCHER && normalizedRole !== ROLES.DEVELOPER) {
       return;
     }
 
-    activeRole = normalizedRole;
-    // Preserve existing role-based CSS without persisting the selected entry role.
-    document.body.setAttribute("data-role", normalizedRole === "researcher" ? "user" : "analyst");
-    document.body.classList.remove("role-selection-active");
-
-    var modal = byId("roleModal");
-    var roleSwitch = byId("roleSwitch");
-
-    if (hideModal && modal) {
-      modal.classList.add("hidden");
-      modal.setAttribute("aria-hidden", "true");
+    // Exit early if already in this role to avoid unnecessary transitions
+    if (activeRole === normalizedRole) {
+      return;
     }
 
-    if (roleSwitch) {
-      roleSwitch.textContent = normalizedRole === "researcher" ? "Researcher" : "Developer / Engineer";
-      roleSwitch.setAttribute(
-        "aria-label",
-        "Current role: " + (normalizedRole === "researcher" ? "Researcher" : "Developer / Engineer") + ". Switch role"
-      );
+    // Start fade-out transition
+    var main = byId("main") || document.querySelector("main");
+    var loader = byId("roleSwitchLoader");
+
+    if (main) {
+      main.classList.add(CLASSES.PORTAL_TRANSITIONING);
     }
 
-    var currentSection = document.querySelector(".section.active-section");
-    if (
-      currentSection &&
-      window.showSection &&
-      window.getComputedStyle(currentSection).display === "none"
-    ) {
-      window.showSection("intro", true);
+    if (loader) {
+      loader.classList.add(CLASSES.ACTIVE);
     }
+
+    // Brief delay for smooth UX
+    setTimeout(function () {
+      activeRole = normalizedRole;
+      // Preserve existing role-based CSS without persisting the selected entry role.
+      document.body.setAttribute(DATA_ATTRS.ROLE, normalizedRole === ROLES.RESEARCHER ? ROLES.USER : ROLES.ANALYST);
+      document.body.classList.remove(CLASSES.ROLE_SELECTION);
+
+      var modal = byId("roleModal");
+      var roleSwitch = byId("roleSwitch");
+      var roleSwitchDev = byId("roleSwitchDev");
+
+      if (hideModal && modal) {
+        modal.classList.add(CLASSES.HIDDEN);
+        modal.setAttribute(DATA_ATTRS.ARIA_HIDDEN, "true");
+      }
+
+      // Update segmented control active states
+      if (normalizedRole === ROLES.RESEARCHER) {
+        if (roleSwitch) {
+          roleSwitch.classList.add(CLASSES.ACTIVE);
+          roleSwitch.setAttribute(DATA_ATTRS.ARIA_LABEL, "Current role: Researcher. Switch role");
+        }
+        if (roleSwitchDev) {
+          roleSwitchDev.classList.remove(CLASSES.ACTIVE);
+        }
+      } else {
+        if (roleSwitchDev) {
+          roleSwitchDev.classList.add(CLASSES.ACTIVE);
+          roleSwitchDev.setAttribute(DATA_ATTRS.ARIA_LABEL, "Current role: Developer / Engineer. Switch role");
+        }
+        if (roleSwitch) {
+          roleSwitch.classList.remove(CLASSES.ACTIVE);
+        }
+      }
+
+      var currentSection = document.querySelector("." + CLASSES.ACTIVE_SECTION);
+      if (
+        currentSection &&
+        window.showSection &&
+        window.getComputedStyle(currentSection).display === "none"
+      ) {
+        window.showSection("intro", true);
+      }
+
+      // Start fade-in transition
+      if (main) {
+        main.classList.remove(CLASSES.PORTAL_TRANSITIONING);
+        main.classList.add(CLASSES.PORTAL_TRANSITIONING_IN);
+      }
+
+      // Hide loader after fade completes
+      setTimeout(function () {
+        if (main) {
+          main.classList.remove(CLASSES.PORTAL_TRANSITIONING_IN);
+        }
+        if (loader) {
+          loader.classList.remove(CLASSES.ACTIVE);
+        }
+      }, transitionDuration);
+    }, transitionDuration);
   }
 
   window.selectRole = function (role) {
@@ -74,10 +149,8 @@
       return;
     }
 
-    function renderThemeButton(isDark) {
-      toggle.innerHTML = isDark
-        ? "<span>&#9790;</span> <span>Dark</span>"
-        : "<span>&#9788;</span> <span>Light</span>";
+    function updateThemeButton(isDark) {
+      toggle.setAttribute("data-theme", isDark ? "dark" : "light");
       toggle.setAttribute(
         "aria-label",
         isDark ? "Switch to light mode" : "Switch to dark mode"
@@ -91,7 +164,7 @@
       document.documentElement.setAttribute("data-theme", "dark");
     }
 
-    renderThemeButton(isDark);
+    updateThemeButton(isDark);
 
     toggle.addEventListener("click", function () {
       var nextDark =
@@ -103,23 +176,24 @@
         document.documentElement.removeAttribute("data-theme");
         localStorage.setItem("theme", "light");
       }
-      renderThemeButton(nextDark);
+      updateThemeButton(nextDark);
     });
   }
 
   function initPortal() {
     var roleModal = byId("roleModal");
     var roleSwitch = byId("roleSwitch");
+    var roleSwitchDev = byId("roleSwitchDev");
 
     // Always reset the entry role on page load; do not restore old persisted roles.
     activeRole = null;
-    document.body.removeAttribute("data-role");
+    document.body.removeAttribute(DATA_ATTRS.ROLE);
     localStorage.removeItem("userRole");
     sessionStorage.removeItem("userRole");
 
     if (roleModal) {
       roleModal.addEventListener("click", function (event) {
-        if (roleModal.classList.contains("hidden")) {
+        if (roleModal.classList.contains(CLASSES.HIDDEN)) {
           return;
         }
 
@@ -135,9 +209,26 @@
       });
     }
 
+    // Handle role switching from segmented control
     if (roleSwitch) {
       roleSwitch.addEventListener("click", function () {
-        openRoleSelector();
+        // If already researcher, open selector; otherwise switch to researcher
+        if (activeRole === ROLES.RESEARCHER) {
+          openRoleSelector();
+        } else {
+          setRole(ROLES.RESEARCHER, true);
+        }
+      });
+    }
+
+    if (roleSwitchDev) {
+      roleSwitchDev.addEventListener("click", function () {
+        // If already developer, open selector; otherwise switch to developer
+        if (activeRole === ROLES.DEVELOPER) {
+          openRoleSelector();
+        } else {
+          setRole(ROLES.DEVELOPER, true);
+        }
       });
     }
 
@@ -186,14 +277,14 @@
     }
 
     function closeFeedbackModal() {
-      modal.classList.add("hidden");
+      modal.classList.add(CLASSES.HIDDEN);
     }
 
     function openFeedbackModal(feedbackType) {
       type.value = feedbackType;
       title.textContent =
         feedbackType === "improvement" ? "Suggest Improvement" : "Submit Feedback";
-      modal.classList.remove("hidden");
+      modal.classList.remove(CLASSES.HIDDEN);
     }
 
     document.querySelectorAll(".js-feedback-modal").forEach(function (button) {
@@ -631,15 +722,8 @@
         if (isRoleSelectionActive()) {
           return;
         }
-        sidebar.classList.toggle("collapsed");
-        mainEl.classList.toggle("sidebar-hidden");
-        var footer = byId("portalFooter");
-
-        if (footer) {
-          footer.style.marginLeft = sidebar.classList.contains("collapsed")
-            ? "0"
-            : "var(--sidebar-width)";
-        }
+        sidebar.classList.toggle(CLASSES.COLLAPSED);
+        mainEl.classList.toggle(CLASSES.SIDEBAR_HIDDEN);
       });
     }
 
